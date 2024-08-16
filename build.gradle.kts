@@ -22,6 +22,7 @@ kotlin {
 // Configure project's dependencies
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
     intellijPlatform {
@@ -32,6 +33,20 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     testImplementation(libs.junit)
+
+    val kotlinxHtmlVersion = "0.11.0"
+
+    // include for JVM target
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
+
+    // include for Common module
+    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+
+    implementation("com.github.nwillc:ksvg:2.1.4")
+    implementation("com.kitfox.svg:svg-salamander:1.0")
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.14")
+    implementation("org.apache.xmlgraphics:batik-codec:1.14")
+    implementation("xerces:xercesImpl:2.12.0")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
