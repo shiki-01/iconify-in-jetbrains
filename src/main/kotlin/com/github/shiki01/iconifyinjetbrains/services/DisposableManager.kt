@@ -10,4 +10,10 @@ object DisposableManager {
         parentDisposable = Disposer.newDisposable("parentDisposable")
         Disposer.register(toolWindowDisposable, parentDisposable)
     }
+
+    fun dispose() {
+        if (::parentDisposable.isInitialized) {
+            Disposer.dispose(parentDisposable)
+        }
+    }
 }

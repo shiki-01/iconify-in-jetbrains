@@ -11,10 +11,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.StringWriter
+import java.io.*
 import java.net.URL
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
@@ -27,13 +24,12 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
-class IIJURLtoSVG(url: String, parentDisposable: Disposable) : JLabel() {
+class IIJURLtoSVG(url: String, parentDisposable: Disposable) : JLabel(), Disposable {
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
-        val scope = CoroutineScope(Dispatchers.IO)
-        Disposer.register(parentDisposable) {
-            scope.cancel()
-        }
+        Disposer.register(parentDisposable, this)
 
         scope.launch {
             try {
@@ -60,27 +56,27 @@ class IIJURLtoSVG(url: String, parentDisposable: Disposable) : JLabel() {
         while (attempts < maxAttempts && svgCode == null) {
             try {
                 withContext(Dispatchers.IO) {
-                    URL(svgUrl).openStream()
-                }.use { inputStream ->
-                    svgCode = String(inputStream.readAllBytes()).replace("currentColor", "#000000")
-                    if (!svgCode!!.contains("xmlns:xlink")) {
-                        svgCode = svgCode!!.replace("<svg ", "<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" ")
-                    }
-                    if (svgCode!!.contains("<use ") && !svgCode!!.contains("xlink:href")) {
-                        svgCode = svgCode!!.replace("<use ", "<use xlink:href=\"#icon\" ")
-                    }
-                    if (svgCode!!.contains("<use ") && !svgCode!!.contains("id=\"icon\"")) {
-                        svgCode = svgCode!!.replace("</svg>", "<symbol id=\"icon\"><path d=\"\"/></symbol></svg>")
-                    }
-                    if (svgCode!!.contains("<stop ") && !svgCode!!.contains("offset=\"")) {
-                        svgCode = svgCode!!.replace("<stop ", "<stop offset=\"0%\" ")
-                    }
-                    if (svgCode!!.contains("<path ") && !svgCode!!.contains("d=\"")) {
-                        svgCode = svgCode!!.replace("<path ", "<path d=\"M0,0 L0,100 L100,100 Z\" ")
-                    }
+                    BufferedInputStream(URL(svgUrl).openStream()).use { inputStream ->
+                        svgCode = String(inputStream.readAllBytes()).replace("currentColor", "#000000")
+                        if (!svgCode!!.contains("xmlns:xlink")) {
+                            svgCode = svgCode!!.replace("<svg ", "<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" ")
+                        }
+                        if (svgCode!!.contains("<use ") && !svgCode!!.contains("xlink:href")) {
+                            svgCode = svgCode!!.replace("<use ", "<use xlink:href=\"#icon\" ")
+                        }
+                        if (svgCode!!.contains("<use ") && !svgCode!!.contains("id=\"icon\"")) {
+                            svgCode = svgCode!!.replace("</svg>", "<symbol id=\"icon\"><path d=\"\"/></symbol></svg>")
+                        }
+                        if (svgCode!!.contains("<stop ") && !svgCode!!.contains("offset=\"")) {
+                            svgCode = svgCode!!.replace("<stop ", "<stop offset=\"0%\" ")
+                        }
+                        if (svgCode!!.contains("<path ") && !svgCode!!.contains("d=\"")) {
+                            svgCode = svgCode!!.replace("<path ", "<path d=\"M0,0 L0,100 L100,100 Z\" ")
+                        }
 
-                    svgCode = validateSVGStopData(svgCode!!)
-                    SVGCache.put(svgUrl, svgCode!!)
+                        svgCode = validateSVGStopData(svgCode!!)
+                        SVGCache.put(svgUrl, svgCode!!)
+                    }
                 }
             } catch (e: IOException) {
                 attempts++
@@ -145,5 +141,9 @@ class IIJURLtoSVG(url: String, parentDisposable: Disposable) : JLabel() {
         } finally {
             Thread.currentThread().contextClassLoader = contextClassLoader
         }
+    }
+
+    override fun dispose() {
+        scope.cancel()
     }
 }

@@ -2,6 +2,8 @@ package com.github.shiki01.iconifyinjetbrains.utils
 
 import com.github.shiki01.iconifyinjetbrains.module.*
 import com.github.shiki01.iconifyinjetbrains.utils.IIJConstants.result
+import com.github.shiki01.iconifyinjetbrains.utils.IIJUtils.getIconifyAPIIcon
+import com.github.shiki01.iconifyinjetbrains.utils.IIJUtils.getIconifyAPISorC
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
@@ -43,7 +45,7 @@ object IIJFetchUtils {
 
                     iconMap.forEach { icons ->
                         icons.value.forEach { icon ->
-                            result.add("https://api.iconify.design/${icons.key}/$icon.svg")
+                            result.add(getIconifyAPIIcon(icons.key, icon))
                         }
                     }
                 } finally {
@@ -69,7 +71,7 @@ object IIJFetchUtils {
 
             try {
                 result.clear()
-                val url = "https://api.iconify.design/collections?prefix=$key"
+                val url = getIconifyAPISorC(IIJUtils.Select.Search(key))
                 val connection = connect(url)
                 try {
                     val response = connection.inputStream.use { inputStream ->
