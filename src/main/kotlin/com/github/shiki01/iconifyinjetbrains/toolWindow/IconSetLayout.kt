@@ -1,7 +1,11 @@
 package com.github.shiki01.iconifyinjetbrains.toolWindow
 
+import com.github.shiki01.iconifyinjetbrains.module.Response
 import com.github.shiki01.iconifyinjetbrains.services.DisposableManager
 import com.github.shiki01.iconifyinjetbrains.services.IIJURLtoSVG
+import com.github.shiki01.iconifyinjetbrains.toolWindow.IIJToolWindow.showIconDetail
+import com.github.shiki01.iconifyinjetbrains.toolWindow.IIJToolWindow.showSetPage
+import com.github.shiki01.iconifyinjetbrains.utils.IIJConstants.DEFAULT_BORDER
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.awt.BorderLayout
@@ -12,13 +16,12 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 object IconSetLayout {
-    suspend fun layout(iconPanel: JPanel, icons: IIJToolWindowFactory.IIJToolWindow.Response.Response) {
+    suspend fun layout(iconPanel: JPanel, icons: Response.Response) {
         val response = icons.result
         icons.licenseComboBox?.let { updateComboBox(it, icons.licenses) }
         icons.categoryComboBox?.let { updateComboBox(it, icons.categories) }
         withContext(Dispatchers.Main) {
             iconPanel.removeAll()
-            val iconRows = mutableListOf<JPanel>()
             response.forEachIndexed { index, iconSet ->
                 val titlePanel = JPanel(BorderLayout())
                 val title = JLabel("<html><a href='#'>${iconSet.name.name}</a></html>").apply {
@@ -27,15 +30,16 @@ object IconSetLayout {
                     cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                     addMouseListener(object : MouseAdapter() {
                         override fun mouseClicked(e: MouseEvent?) {
-                            IIJToolWindowFactory.IIJToolWindow().showSetPage(iconSet)
+                            showSetPage(iconSet)
                         }
                     })
                 }
-                val licenseLabel = JLabel("<html><a href='${iconSet.license.url}'>${iconSet.license.title}</a></html>").apply {
-                    font = font.deriveFont(12f)
-                    border = BorderFactory.createEmptyBorder(10, 10, 10, 0)
-                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                }
+                val licenseLabel =
+                    JLabel("<html><a href='${iconSet.license.url}'>${iconSet.license.title}</a></html>").apply {
+                        font = font.deriveFont(12f)
+                        border = BorderFactory.createEmptyBorder(10, 10, 10, 0)
+                        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                    }
                 titlePanel.add(title, BorderLayout.WEST)
                 titlePanel.add(licenseLabel, BorderLayout.EAST)
                 titlePanel.border = BorderFactory.createEmptyBorder(0, 10, 0, 10)
@@ -47,19 +51,18 @@ object IconSetLayout {
                     iconRow.add(iconLabel)
                 }
                 iconRow.border = BorderFactory.createEmptyBorder(0, 10, 0, 10)
-                iconRows.add(iconRow)
+                iconPanel.add(iconRow)
 
                 if (index < response.size - 1) {
                     val separator = JSeparator(SwingConstants.HORIZONTAL)
                     val separatorPanel = JPanel(BorderLayout())
                     separatorPanel.add(separator, BorderLayout.CENTER)
-                    separatorPanel.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                    separatorPanel.border = DEFAULT_BORDER
                     iconPanel.add(separatorPanel)
                 }
             }
-            iconRows.forEach { iconPanel.add(it) }
             val bottomSpace = JPanel()
-            bottomSpace.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            bottomSpace.border = DEFAULT_BORDER
             iconPanel.add(bottomSpace)
 
             iconPanel.revalidate()
@@ -67,34 +70,34 @@ object IconSetLayout {
         }
     }
 
-    suspend fun searchLayout(iconPanel: JPanel, icons: IIJToolWindowFactory.IIJToolWindow.Response.SearchResponse) {
+    suspend fun searchLayout(iconPanel: JPanel, icons: Response.SearchResponse) {
         val response = icons.result
         withContext(Dispatchers.Main) {
             iconPanel.removeAll()
-            val iconRows = mutableListOf<JPanel>()
-            response.forEachIndexed { index, icon ->
+            response.forEachIndexed { _, icon ->
                 val iconLabel = IIJURLtoSVG(icon, DisposableManager.parentDisposable).apply {
                     toolTipText = icon
                     cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                     addMouseListener(object : MouseAdapter() {
                         override fun mouseClicked(e: MouseEvent?) {
-                            IIJToolWindowFactory.IIJToolWindow().showIconDetail(iconPanel, "search", icon)
+                            showIconDetail(iconPanel, "search", icon)
                         }
                     })
                 }
                 val iconRow = JPanel(FlowLayout(FlowLayout.LEFT, 10, 10))
                 iconRow.add(iconLabel)
-                iconRows.add(iconRow)
+                iconPanel.add(iconRow)
             }
-            iconRows.forEach { iconPanel.add(it) }
             iconPanel.revalidate()
             iconPanel.repaint()
         }
     }
 
     private fun updateComboBox(comboBox: JComboBox<String>?, items: Set<String>) {
-        comboBox?.removeAllItems()
-        comboBox?.addItem("All")
-        items.forEach { comboBox?.addItem(it) }
+        comboBox?.let {
+            it.removeAllItems()
+            it.addItem("All")
+            items.forEach { item -> it.addItem(item) }
+        }
     }
 }

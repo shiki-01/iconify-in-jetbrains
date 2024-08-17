@@ -1,6 +1,7 @@
 package com.github.shiki01.iconifyinjetbrains.services
 
-import com.github.shiki01.iconifyinjetbrains.toolWindow.IIJToolWindowFactory.IIJToolWindow.*
+import com.github.shiki01.iconifyinjetbrains.module.IconCategory
+import com.github.shiki01.iconifyinjetbrains.module.IconSet
 
 class IconSetManager {
     private val iconSets: MutableList<IconSet> = mutableListOf()
