@@ -42,7 +42,7 @@ dependencies {
     // include for Common module
     implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
 
-    implementation("com.github.nwillc:ksvg:2.1.4")
+    implementation("com.github.nwillc:ksvg:2.2.0")
     implementation("com.kitfox.svg:svg-salamander:1.0")
     implementation("org.apache.xmlgraphics:batik-transcoder:1.17")
     implementation("org.apache.xmlgraphics:batik-codec:1.14")
