@@ -45,7 +45,7 @@ dependencies {
     implementation("com.github.nwillc:ksvg:2.2.0")
     implementation("com.kitfox.svg:svg-salamander:1.0")
     implementation("org.apache.xmlgraphics:batik-transcoder:1.17")
-    implementation("org.apache.xmlgraphics:batik-codec:1.17")
+    implementation("org.apache.xmlgraphics:batik-codec:1.18")
     implementation("xerces:xercesImpl:2.12.2")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
